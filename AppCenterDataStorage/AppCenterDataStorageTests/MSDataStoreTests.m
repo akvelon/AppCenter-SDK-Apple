@@ -3,6 +3,7 @@
 
 #import "MSChannelGroupProtocol.h"
 #import "MSConstants+Internal.h"
+#import "MSChannelUnitProtocol.h"
 #import "MSCosmosDb.h"
 #import "MSCosmosDbPrivate.h"
 #import "MSDataSourceError.h"
@@ -13,41 +14,17 @@
 #import "MSDocumentWrapper.h"
 #import "MSHttpClient.h"
 #import "MSMockUserDefaults.h"
+#import "MSHttpTestUtil.h"
+#import "MSMockUserDefaults.h"
+#import "MSPaginatedDocuments.h"
+>>>>>>> feature/storage-list-documents
 #import "MSServiceAbstract.h"
 #import "MSServiceAbstractProtected.h"
 #import "MSTestFrameworks.h"
 #import "MSTokenExchange.h"
+#import "MSTokenExchangePrivate.h"
 #import "MSTokenResult.h"
-#import "MSTokensResponse.h"
-
-@interface MSFakeSerializableDocument : NSObject <MSSerializableDocument>
-- (instancetype)initFromDictionary:(NSDictionary *)dictionary;
-- (NSDictionary *)serializeToDictionary;
-@end
-
-@implementation MSFakeSerializableDocument
-
-- (NSDictionary *)serializeToDictionary {
-  return [NSDictionary new];
-}
-
-- (instancetype)initFromDictionary:(NSDictionary *)__unused dictionary {
-  (self = [super init]);
-  return self;
-}
-
-@end
-
-@interface MSDataStoreTests : XCTestCase
-
-@property(nonatomic, strong) MSDataStore *sut;
-@property(nonatomic) id settingsMock;
-@property(nonatomic) id tokenExchangeMock;
-@property(nonatomic) id cosmosDbMock;
-
-@end
-
-@implementation MSDataStoreTests
+#import "MSUserIdContextPrivate.h"
 
 static NSString *const kMSTestAppSecret = @"TestAppSecret";
 static NSString *const kMSCosmosDbHttpCodeKey = @"com.Microsoft.AppCenter.HttpCodeKey";
@@ -60,21 +37,45 @@ static NSString *const kMSStatusTest = @"status";
 static NSString *const kMSExpiresOnTest = @"20191212";
 static NSString *const kMSDocumentIdTest = @"documentId";
 
-- (void)setUp {
-  [super setUp];
-  self.settingsMock = [MSMockUserDefaults new];
-  self.sut = [MSDataStore sharedInstance];
-  self.tokenExchangeMock = OCMClassMock([MSTokenExchange class]);
-  self.cosmosDbMock = OCMClassMock([MSCosmosDb class]);
+@interface MSDataStoreTests : XCTestCase
+
+@end
+
+/*
+ * Test document object.
+ */
+
+@interface SomeObject : NSObject <MSSerializableDocument>
+
+@property(strong, nonatomic) NSString *property1;
+@property(strong, nonatomic) NSNumber *property2;
+
+@end
+
+@implementation SomeObject
+
+@synthesize property1 = _property1;
+@synthesize property2 = _property2;
+
+- (instancetype)initFromDictionary:(NSDictionary *)dictionary {
+  self.property1 = ((NSDictionary *)dictionary[@"document"])[@"property1"];
+  self.property2 = ((NSDictionary *)dictionary[@"document"])[@"property2"];
+  return self;
 }
 
-- (void)tearDown {
-  [super tearDown];
-  [MSDataStore resetSharedInstance];
-  [self.settingsMock stopMocking];
-  [self.tokenExchangeMock stopMocking];
-  [self.cosmosDbMock stopMocking];
+- (nonnull NSDictionary *)serializeToDictionary {
+  return [NSDictionary new];
 }
+
+@end
+
+/*
+ * Tests.
+ */
+
+@implementation MSDataStoreTests
+
+#pragma mark - Tests
 
 - (nullable NSMutableDictionary *)prepareMutableDictionary {
   NSMutableDictionary *_Nullable tokenResultDictionary = [NSMutableDictionary new];
@@ -214,22 +215,20 @@ static NSString *const kMSDocumentIdTest = @"documentId";
   MSHttpClient *httpClient = OCMClassMock([MSHttpClient class]);
   MSTokenResult *tokenResult = [[MSTokenResult alloc] initWithDictionary:[self prepareMutableDictionary]];
   __block BOOL completionHandlerCalled = NO;
-  MSHttpRequestCompletionHandler handler =
-      ^(NSData *_Nullable __unused responseBody, NSHTTPURLResponse *_Nullable __unused response, NSError *_Nullable __unused error) {
+  MSCosmosDbCompletionHandler handler =
+      ^(NSData *_Nullable __unused data, NSDictionary *_Nullable __unused headers, NSError *_Nullable __unused error) {
         completionHandlerCalled = YES;
       };
   NSString *expectedURLString = @"https://dbAccount.documents.azure.com/dbs/dbName/colls/dbCollectionName/docs/documentId";
   __block NSURL *actualURL;
   __block NSData *actualData;
-  OCMStub([httpClient sendAsync:OCMOCK_ANY method:OCMOCK_ANY headers:OCMOCK_ANY data:OCMOCK_ANY completionHandler:OCMOCK_ANY])
-      .andDo(^(NSInvocation *invocation) {
-        MSHttpRequestCompletionHandler completionHandler;
-        [invocation retainArguments];
-        [invocation getArgument:&actualURL atIndex:2];
-        [invocation getArgument:&actualData atIndex:5];
-        [invocation getArgument:&completionHandler atIndex:6];
-        completionHandler(actualData, nil, nil);
-      });
+  OCMStub([httpClient sendAsync:OCMOCK_ANY completionHandler:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+    MSCosmosDbCompletionHandler completionHandler;
+    [invocation retainArguments];
+    [invocation getArgument:&actualData atIndex:2];
+    [invocation getArgument:&completionHandler atIndex:3];
+    completionHandler(actualData, nil, (NSError *)nil);
+  });
   NSMutableDictionary *additionalHeaders = [NSMutableDictionary new];
   additionalHeaders[@"Foo"] = @"Bar";
   NSDictionary *dic = @{@"abv" : @1, @"foo" : @"bar"};
@@ -257,22 +256,20 @@ static NSString *const kMSDocumentIdTest = @"documentId";
   MSHttpClient *httpClient = OCMClassMock([MSHttpClient class]);
   MSTokenResult *tokenResult = [[MSTokenResult alloc] initWithDictionary:[self prepareMutableDictionary]];
   __block BOOL completionHandlerCalled = NO;
-  MSHttpRequestCompletionHandler handler =
-      ^(NSData *_Nullable __unused responseBody, NSHTTPURLResponse *_Nullable __unused response, NSError *_Nullable __unused error) {
+  MSCosmosDbCompletionHandler handler =
+      ^(NSData *_Nullable __unused data, NSDictionary *_Nullable __unused headers, NSError *_Nullable __unused error) {
         completionHandlerCalled = YES;
       };
   NSString *expectedURLString = @"https://dbAccount.documents.azure.com/dbs/dbName/colls/dbCollectionName/docs/documentId";
   __block NSURL *actualURL;
   __block NSData *actualData;
-  OCMStub([httpClient sendAsync:OCMOCK_ANY method:OCMOCK_ANY headers:OCMOCK_ANY data:OCMOCK_ANY completionHandler:OCMOCK_ANY])
-      .andDo(^(NSInvocation *invocation) {
-        MSHttpRequestCompletionHandler completionHandler;
-        [invocation retainArguments];
-        [invocation getArgument:&actualURL atIndex:2];
-        [invocation getArgument:&actualData atIndex:5];
-        [invocation getArgument:&completionHandler atIndex:6];
-        completionHandler(actualData, nil, nil);
-      });
+  OCMStub([httpClient sendAsync:OCMOCK_ANY completionHandler:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+    MSCosmosDbCompletionHandler completionHandler;
+    [invocation retainArguments];
+    [invocation getArgument:&actualData atIndex:2];
+    [invocation getArgument:&completionHandler atIndex:3];
+    completionHandler(actualData, nil, nil);
+  });
   NSDictionary *dic = @{@"abv" : @1, @"foo" : @"bar"};
   __block NSData *data = [NSJSONSerialization dataWithJSONObject:dic options:0 error:nil];
 
@@ -283,7 +280,6 @@ static NSString *const kMSDocumentIdTest = @"documentId";
                                                httpMethod:kMSHttpMethodGet
                                                      body:data
                                         additionalHeaders:nil
-                                              offlineMode:NO
                                         completionHandler:handler];
 
   // Then
@@ -632,6 +628,64 @@ static NSString *const kMSDocumentIdTest = @"documentId";
   XCTAssertEqual(actualError.errorCode, expectedResponseCode);
 }
 
+// TODO: add more tests for list operation.
+- (void)testListSingleDocument {
+
+  // If
+  MSDataStore *sut = [MSDataStore new];
+  id httpClient = OCMClassMock([MSCosmosDbIngestion class]);
+  OCMStub([httpClient new]).andReturn(httpClient);
+  id msTokenEchange = OCMClassMock([MSTokenExchange class]);
+  OCMStub([msTokenEchange retrieveCachedToken:[OCMArg any]])
+      .andReturn([[MSTokenResult alloc] initWithDictionary:[self prepareMutableDictionary]]);
+  __weak XCTestExpectation *expectation = [self expectationWithDescription:@"List single document"];
+  OCMStub([httpClient sendAsync:OCMOCK_ANY completionHandler:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+    [invocation retainArguments];
+    MSSendAsyncCompletionHandler completionHandler;
+    [invocation getArgument:&completionHandler atIndex:3];
+    NSData *payload = [self getJsonFixture:@"oneDocumentPage"];
+    completionHandler(@"callId", [MSHttpTestUtil createMockResponseForStatusCode:200 headers:nil], payload, nil);
+  });
+
+  // When
+  __block MSPaginatedDocuments *testDocuments;
+  [sut listWithPartition:@"partition"
+            documentType:[SomeObject class]
+             readOptions:nil
+       continuationToken:nil
+       completionHandler:^(MSPaginatedDocuments *_Nonnull documents) {
+         testDocuments = documents;
+         [expectation fulfill];
+       }];
+
+  // Then
+  id handler = ^(NSError *_Nullable error) {
+    if (error) {
+      XCTFail(@"Expectation Failed with error: %@", error);
+    } else {
+      XCTAssertNotNil(testDocuments);
+      XCTAssertFalse([testDocuments hasNextPage]);
+      XCTAssertEqual([[testDocuments currentPage] items].count, 1);
+      [testDocuments nextPageWithCompletionHandler:^(MSPage *page) {
+        XCTAssertNil(page);
+      }];
+      MSDocumentWrapper<SomeObject *> *documentWrapper = [[testDocuments currentPage] items][0];
+      XCTAssertTrue([[documentWrapper documentId] isEqualToString:@"doc1"]);
+      XCTAssertNil([documentWrapper error]);
+      XCTAssertNotNil([documentWrapper jsonValue]);
+      XCTAssertTrue([[documentWrapper eTag] isEqualToString:@"etag value"]);
+      XCTAssertTrue([[documentWrapper partition] isEqualToString:@"partition"]);
+      XCTAssertNotNil([documentWrapper lastUpdatedDate]);
+      SomeObject *deserializedDocument = [documentWrapper deserializedValue];
+      XCTAssertNotNil(deserializedDocument);
+      XCTAssertTrue([[deserializedDocument property1] isEqualToString:@"property 1 string"]);
+      XCTAssertTrue([[deserializedDocument property2] isEqual:@42]);
+    }
+  };
+  [self waitForExpectationsWithTimeout:1 handler:handler];
+  [httpClient stopMocking];
+}
+
 - (void)testSetOfflineMode {
 
   // Then
@@ -760,6 +814,16 @@ static NSString *const kMSDocumentIdTest = @"documentId";
                                                          additionalHeaders:OCMOCK_ANY
                                                                offlineMode:YES
                                                          completionHandler:OCMOCK_ANY]);
+}
+
+/*
+ * Utils.
+ */
+
+- (NSData *)getJsonFixture:(NSString *)fixture {
+  NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+  NSString *path = [bundle pathForResource:fixture ofType:@"json"];
+  return [NSData dataWithContentsOfFile:path];
 }
 
 @end

@@ -13,6 +13,35 @@ static NSString *const kMSDefaultApiUrl = @"https://api.appcenter.ms/v0.1";
 
 @interface MSDataStore () <MSAuthTokenContextDelegate>
 
+- (void)readWithPartition:(NSString *)partition
+               documentId:(NSString *)documentId
+             documentType:(Class)documentType
+              readOptions:(MSReadOptions *_Nullable)readOptions
+        completionHandler:(MSDocumentWrapperCompletionHandler)completionHandler;
+
+- (void)listWithPartition:(NSString *)partition
+             documentType:(Class)documentType
+              readOptions:(MSReadOptions *_Nullable)readOptions
+        continuationToken:(NSString *_Nullable)continuationToken
+        completionHandler:(MSPaginatedDocumentsCompletionHandler)completionHandler;
+
+- (void)createWithPartition:(NSString *)partition
+                 documentId:(NSString *)documentId
+                   document:(id<MSSerializableDocument>)document
+               writeOptions:(MSWriteOptions *_Nullable)writeOptions
+          completionHandler:(MSDocumentWrapperCompletionHandler)completionHandler;
+
+- (void)replaceWithPartition:(NSString *)partition
+                  documentId:(NSString *)documentId
+                    document:(id<MSSerializableDocument>)document
+                writeOptions:(MSWriteOptions *_Nullable)writeOptions
+           completionHandler:(MSDocumentWrapperCompletionHandler)completionHandler;
+
+- (void)deleteDocumentWithPartition:(NSString *)partition
+                         documentId:(NSString *)documentId
+                       writeOptions:(MSWriteOptions *_Nullable)writeOptions
+                  completionHandler:(MSDataSourceErrorCompletionHandler)completionHandler;
+
 /**
  * A flag that indicates offline mode is on or off.
  */

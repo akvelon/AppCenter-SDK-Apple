@@ -132,10 +132,12 @@ static NSString *const kMSGetTokenPath = @"/data/tokens";
 }
 
 /*
- * Get back the Cached Cosmos DB token
- * If the DB token has expired, that token is deleted from KeyChain
+ * Return a cached (CosmosDB resource) token for a given partition name.
+ *
+ * @param partitionName The partition for which to return the token.
+ * @return The cached token or `nil`.
  */
-+ (MSTokenResult *)retrieveCachedToken:(NSString *)partitionName {
++ (MSTokenResult *_Nullable)retrieveCachedToken:(NSString *)partitionName {
   if (partitionName) {
     NSString *tokenString = [MSKeychainUtil stringForKey:[MSTokenExchange tokenKeyNameForPartition:partitionName]];
     if (tokenString) {
@@ -192,8 +194,8 @@ static NSString *const kMSGetTokenPath = @"/data/tokens";
  *       User partition : MSStorageUserDbToken
  */
 + (NSString *)tokenKeyNameForPartition:(NSString *)partitionName {
-  NSRange partition = [partitionName rangeOfString:MSDataStoreAppDocumentsPartition];
-  if (partition.location != NSNotFound) {
+  // TODO: Fix this, because is not available on MacOS less than 10.10.
+  if ([partitionName containsString:MSDataStoreAppDocumentsPartition]) {
     return kMSStorageReadOnlyDbTokenKey;
   }
 
