@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -226,7 +226,7 @@
 		C2B25A2D230F079800511D49 /* AppCenterCrashes.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A91F66230BFDB70068070D /* AppCenterCrashes.framework */; };
 		C2B25A30230F07B000511D49 /* AppCenterCrashes.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9A91F5B230BFDB40068070D /* AppCenterCrashes.framework */; };
 		C2B25A32230F07B500511D49 /* AppCenter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2B25A31230F07B500511D49 /* AppCenter.framework */; };
-		C2F96C9423E0768600EFEAC7 /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2F96C7123E0765B00EFEAC7 /* CrashReporter.framework */; };
+		C2BC2E2323E090780008D3A6 /* libCrashReporter-iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2F96C7323E0765B00EFEAC7 /* libCrashReporter-iphoneos.a */; };
 		C2F96C9723E0769600EFEAC7 /* libCrashReporter-MacOSX-Static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2F96C6F23E0765B00EFEAC7 /* libCrashReporter-MacOSX-Static.a */; };
 		C2F96C9823E0769F00EFEAC7 /* CrashReporter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2F96C7723E0765B00EFEAC7 /* CrashReporter.framework */; };
 		C2FE827C23757CB7007DCD28 /* MSApplicationForwarder.h in Headers */ = {isa = PBXBuildFile; fileRef = C2FE827A23757CB7007DCD28 /* MSApplicationForwarder.h */; };
@@ -617,13 +617,6 @@
 			remoteGlobalIDString = 05E731F20EFA1AAB005EDFB7;
 			remoteInfo = "CrashReporter-MacOSX-Static";
 		};
-		C2F96C9F23E076BA00EFEAC7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C2F96C5123E0765A00EFEAC7 /* CrashReporter.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 058812B81040582D009128FB;
-			remoteInfo = "CrashReporter-iOS";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -831,7 +824,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9EBAB2D230D735E00A20F0F /* AppCenter.framework in Frameworks */,
-				C2F96C9423E0768600EFEAC7 /* CrashReporter.framework in Frameworks */,
+				C2BC2E2323E090780008D3A6 /* libCrashReporter-iphoneos.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1470,7 +1463,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				C2F96CA023E076BA00EFEAC7 /* PBXTargetDependency */,
 			);
 			name = "AppCenterCrashes iOS Framework";
 			productName = AppCenterCrashesStaticIOS;
@@ -2187,12 +2179,6 @@
 			isa = PBXTargetDependency;
 			name = "CrashReporter-MacOSX-Static";
 			targetProxy = C2F96C9D23E076B300EFEAC7 /* PBXContainerItemProxy */;
-		};
-		C2F96CA023E076BA00EFEAC7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "CrashReporter-iOS";
-			platformFilter = ios;
-			targetProxy = C2F96C9F23E076BA00EFEAC7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
